@@ -22,9 +22,9 @@ app = Flask(__name__)
 CORS(app)
 
 ADMIN_SECRET = 'Shreedutt@7371'
-SMTP_USER = os.environ.get('SMTP_USER', 'knacksolution.vlsd@gmail.com')
+SMTP_USER = os.environ.get('SMTP_USER', 'knacksolutions.vlsd@gmail.com')
 SMTP_PASS = os.environ.get('SMTP_PASS', '')
-CONTACT_TO = 'knacksolution.vlsd@gmail.com'
+CONTACT_TO = 'knacksolutions.vlsd@gmail.com'
 
 # Cloudinary config
 cloudinary.config(
@@ -56,6 +56,7 @@ services_col = db['services']
 clients_col = db['clients']
 team_col = db['team']
 categories_col = db['categories']
+service_categories_col = db['service_categories']
 
 # IMAP connection cache — per-thread
 _imap_local = threading.local()
@@ -106,6 +107,34 @@ def delete_category(cat_id):
         return jsonify({'error': 'Unauthorized'}), 401
     categories_col.delete_one({'_id': ObjectId(cat_id)})
     return jsonify({'message': 'Category deleted'})
+
+
+# ── SERVICE CATEGORIES ────────────────────────────────────
+
+@app.route('/api/service-categories', methods=['GET'])
+def get_service_categories():
+    docs = list(service_categories_col.find())
+    return jsonify([{'id': str(d['_id']), 'name': d.get('name', '')} for d in docs])
+
+@app.route('/api/service-categories', methods=['POST'])
+def add_service_category():
+    if not check_admin(request):
+        return jsonify({'error': 'Unauthorized'}), 401
+    data = request.get_json()
+    name = (data.get('name') or '').strip()
+    if not name:
+        return jsonify({'error': 'Name is required'}), 400
+    if service_categories_col.find_one({'name': name}):
+        return jsonify({'error': 'Service category already exists'}), 400
+    service_categories_col.insert_one({'name': name})
+    return jsonify({'message': 'Service category added'}), 201
+
+@app.route('/api/service-categories/<cat_id>', methods=['DELETE'])
+def delete_service_category(cat_id):
+    if not check_admin(request):
+        return jsonify({'error': 'Unauthorized'}), 401
+    service_categories_col.delete_one({'_id': ObjectId(cat_id)})
+    return jsonify({'message': 'Service category deleted'})
 
 
 # ── PRODUCTS ──────────────────────────────────────────────
@@ -187,7 +216,13 @@ def delete_product(product_id):
 @app.route('/api/services', methods=['GET'])
 def get_services():
     docs = list(services_col.find())
-    return jsonify([{'id': str(d['_id']), 'name': d.get('name', ''), 'description': d.get('description', ''), 'image': d.get('image') or None} for d in docs])
+    return jsonify([{
+        'id': str(d['_id']),
+        'name': d.get('name', ''),
+        'description': d.get('description', ''),
+        'image': d.get('image') or None,
+        'category': d.get('category') or None
+    } for d in docs])
 
 
 @app.route('/api/services', methods=['POST'])
@@ -205,7 +240,8 @@ def add_service():
         result = cloudinary.uploader.upload(file, folder='knacksolutions/services', quality='100')
         image_url = result['secure_url'].replace('/upload/', '/upload/q_100/')
         image_public_id = result['public_id']
-    services_col.insert_one({'name': name, 'description': description, 'image': image_url, 'image_public_id': image_public_id})
+    category = request.form.get('category', '').strip()
+    services_col.insert_one({'name': name, 'description': description, 'image': image_url, 'image_public_id': image_public_id, 'category': category or None})
     return jsonify({'message': 'Service added'}), 201
 
 
@@ -228,6 +264,8 @@ def update_service(service_id):
         result = cloudinary.uploader.upload(file, folder='knacksolutions/services', quality='100')
         update['image'] = result['secure_url'].replace('/upload/', '/upload/q_100/')
         update['image_public_id'] = result['public_id']
+    category = request.form.get('category', '').strip()
+    update['category'] = category or None
     services_col.update_one({'_id': ObjectId(service_id)}, {'$set': update})
     return jsonify({'message': 'Service updated'})
 

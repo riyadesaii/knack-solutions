@@ -20,7 +20,7 @@ const features = [
 const Index = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
-  const { data: products = [] } = useQuery({
+  const { data: products = [], isLoading } = useQuery({
     queryKey: ["products"],
     queryFn: fetchProducts,
   });
@@ -195,7 +195,13 @@ const Index = () => {
       </section>
 
       {/* Featured Products */}
-      {featuredProducts.length > 0 && (
+      {isLoading ? (
+        <section className="py-24">
+          <div className="flex items-center justify-center">
+            <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          </div>
+        </section>
+      ) : featuredProducts.length > 0 && (
         <section className="py-24 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-background via-slate-50 to-orange-50/30" />
           <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
@@ -218,8 +224,6 @@ const Index = () => {
           </div>
         </section>
       )}
-
-      <ClientMarquee />
       <ProductModal product={selectedProduct} open={!!selectedProduct} onClose={() => setSelectedProduct(null)} />
     </div>
   );

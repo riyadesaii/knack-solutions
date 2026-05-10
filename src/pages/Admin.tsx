@@ -11,7 +11,8 @@ import {
   fetchClients, addClient, deleteClient,
   fetchServices, addService, deleteService, updateService,
   fetchTeam, addTeamMember, deleteTeamMember,
-  fetchCategories, addCategory, deleteCategory, BASE_URL,
+  fetchCategories, addCategory, deleteCategory,
+  fetchServiceCategories, addServiceCategory, deleteServiceCategory, BASE_URL,
 } from "@/lib/api";
 
 const ADMIN_KEY = "Shreedutt@7371";
@@ -87,6 +88,9 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
   // Category state
   const [catName, setCatName] = useState("");
 
+  // Service Category state
+  const [sCatName, setSCatName] = useState("");
+
   // Clients state
   const [cName, setCName] = useState("");
   const [cLogo, setCLogo] = useState<File | null>(null);
@@ -96,6 +100,7 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
   const [sName, setSName] = useState("");
   const [sDesc, setSDesc] = useState("");
   const [sImage, setSImage] = useState<File | null>(null);
+  const [sCategory, setSCategory] = useState("");
   const sImageRef = useRef<HTMLInputElement>(null);
 
   // Edit service state
@@ -103,6 +108,7 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
   const [editSName, setEditSName] = useState("");
   const [editSDesc, setEditSDesc] = useState("");
   const [editSImage, setEditSImage] = useState<File | null>(null);
+  const [editSCategory, setEditSCategory] = useState("");
   const editSImageRef = useRef<HTMLInputElement>(null);
 
   // Team state
@@ -115,6 +121,7 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
   const { data: services = [] } = useQuery({ queryKey: ["services"], queryFn: fetchServices });
   const { data: team = [] } = useQuery({ queryKey: ["team"], queryFn: fetchTeam });
   const { data: categories = [] } = useQuery({ queryKey: ["categories"], queryFn: fetchCategories });
+  const { data: serviceCategories = [] } = useQuery({ queryKey: ["serviceCategories"], queryFn: fetchServiceCategories });
 
   const addProductMutation = useMutation({
     mutationFn: addProduct,
@@ -169,7 +176,7 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
     mutationFn: addService,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["services"] });
-      setSName(""); setSDesc(""); setSImage(null);
+      setSName(""); setSDesc(""); setSImage(null); setSCategory("");
       if (sImageRef.current) sImageRef.current.value = "";
       toast({ title: "Service added" });
     },
@@ -228,6 +235,21 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["categories"] }),
   });
 
+  const addServiceCategoryMutation = useMutation({
+    mutationFn: addServiceCategory,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["serviceCategories"] });
+      setSCatName("");
+      toast({ title: "Service category added" });
+    },
+    onError: (e: Error) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
+  const deleteServiceCategoryMutation = useMutation({
+    mutationFn: deleteServiceCategory,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["serviceCategories"] }),
+  });
+
   const handleAddProduct = () => {
     if (!pName.trim()) return toast({ title: "Name is required", variant: "destructive" });
     if (!pImage) return toast({ title: "Product image is required", variant: "destructive" });
@@ -264,6 +286,7 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
     const fd = new FormData();
     fd.append("name", sName);
     fd.append("description", sDesc);
+    fd.append("category", sCategory);
     if (sImage) fd.append("image", sImage);
     addServiceMutation.mutate(fd);
   };
@@ -274,6 +297,7 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
     const fd = new FormData();
     fd.append("name", editSName);
     fd.append("description", editSDesc);
+    fd.append("category", editSCategory);
     if (editSImage) fd.append("image", editSImage);
     updateServiceMutation.mutate({ id: editServiceId, data: fd });
   };
@@ -461,6 +485,17 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
               <Input placeholder="Service Name *" value={sName} onChange={(e) => setSName(e.target.value)} />
               <Textarea placeholder="Description" value={sDesc} onChange={(e) => setSDesc(e.target.value)} rows={3} />
               <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Category</label>
+                <select
+                  value={sCategory}
+                  onChange={(e) => setSCategory(e.target.value)}
+                  className="w-full text-sm border border-input rounded-lg px-3 py-2 bg-background text-foreground"
+                >
+                  <option value="">-- No Category --</option>
+                  {serviceCategories.map((c) => <option key={c.id} value={c.name}>{c.name}</option>)}
+                </select>
+              </div>
+              <div>
                 <label className="text-xs text-muted-foreground mb-1 block">Service Image (optional)</label>
                 <input
                   ref={sImageRef}
@@ -485,6 +520,17 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
                     <>
                       <Input value={editSName} onChange={(e) => setEditSName(e.target.value)} placeholder="Name *" />
                       <Textarea value={editSDesc} onChange={(e) => setEditSDesc(e.target.value)} placeholder="Description" rows={2} />
+                      <div>
+                        <label className="text-xs text-muted-foreground mb-1 block">Category</label>
+                        <select
+                          value={editSCategory}
+                          onChange={(e) => setEditSCategory(e.target.value)}
+                          className="w-full text-sm border border-input rounded-lg px-3 py-2 bg-background text-foreground"
+                        >
+                          <option value="">-- No Category --</option>
+                          {serviceCategories.map((c) => <option key={c.id} value={c.name}>{c.name}</option>)}
+                        </select>
+                      </div>
                       <div>
                         <label className="text-xs text-muted-foreground mb-1 block">New Image (optional)</label>
                         <input
@@ -511,7 +557,7 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
                         <p className="font-medium text-sm text-foreground truncate">{s.name}</p>
                         <p className="text-xs text-muted-foreground truncate">{s.description}</p>
                       </div>
-                      <Button variant="ghost" size="icon" onClick={() => { setEditServiceId(s.id); setEditSName(s.name); setEditSDesc(s.description); }}>
+                      <Button variant="ghost" size="icon" onClick={() => { setEditServiceId(s.id); setEditSName(s.name); setEditSDesc(s.description); setEditSCategory(s.category || ""); setEditSImage(null); }}>
                         <Pencil size={15} />
                       </Button>
                       <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => deleteServiceMutation.mutate(s.id)}>
@@ -545,6 +591,34 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
                     <p className="font-medium text-sm text-foreground">{c.name}</p>
                   </div>
                   <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => deleteCategoryMutation.mutate(c.id)}>
+                    <Trash2 size={16} />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Service Categories Section */}
+        <div className="mt-10 space-y-6">
+          <h2 className="font-display text-xl font-semibold text-foreground border-b pb-3">Service Categories</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+            <div className="p-6 rounded-xl border bg-card space-y-3">
+              <h3 className="text-sm font-semibold text-foreground">Add Service Category</h3>
+              <Input placeholder="Category Name *" value={sCatName} onChange={(e) => setSCatName(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addServiceCategoryMutation.mutate(sCatName)} />
+              <Button onClick={() => { if (sCatName.trim()) addServiceCategoryMutation.mutate(sCatName); }} disabled={addServiceCategoryMutation.isPending} className="w-full">
+                <Plus size={16} className="mr-2" />
+                {addServiceCategoryMutation.isPending ? "Adding..." : "Add Service Category"}
+              </Button>
+            </div>
+            <div className="space-y-3">
+              {serviceCategories.length === 0 && <p className="text-sm text-muted-foreground text-center py-6">No service categories yet.</p>}
+              {serviceCategories.map((c) => (
+                <div key={c.id} className="flex items-center gap-3 p-4 rounded-xl border bg-card">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm text-foreground">{c.name}</p>
+                  </div>
+                  <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => deleteServiceCategoryMutation.mutate(c.id)}>
                     <Trash2 size={16} />
                   </Button>
                 </div>

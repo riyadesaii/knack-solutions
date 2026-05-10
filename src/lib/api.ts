@@ -13,11 +13,17 @@ export interface Category {
   name: string;
 }
 
+export interface ServiceCategory {
+  id: string;
+  name: string;
+}
+
 export interface Service {
   id: string;
   name: string;
   description: string;
   image: string | null;
+  category: string | null;
 }
 
 export interface Client {
@@ -61,6 +67,33 @@ export async function deleteCategory(id: string): Promise<void> {
     headers: adminHeaders(),
   });
   if (!res.ok) throw new Error('Failed to delete category');
+}
+
+// Service Categories
+export async function fetchServiceCategories(): Promise<ServiceCategory[]> {
+  const res = await fetch(`${BASE_URL}/api/service-categories`);
+  if (!res.ok) throw new Error('Failed to fetch service categories');
+  return res.json();
+}
+
+export async function addServiceCategory(name: string): Promise<void> {
+  const res = await fetch(`${BASE_URL}/api/service-categories`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...adminHeaders() },
+    body: JSON.stringify({ name }),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || 'Failed to add service category');
+  }
+}
+
+export async function deleteServiceCategory(id: string): Promise<void> {
+  const res = await fetch(`${BASE_URL}/api/service-categories/${id}`, {
+    method: 'DELETE',
+    headers: adminHeaders(),
+  });
+  if (!res.ok) throw new Error('Failed to delete service category');
 }
 
 // Products

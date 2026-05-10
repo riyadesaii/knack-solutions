@@ -17,10 +17,16 @@ const Products = () => {
     setActiveCategory(cat || "All");
   }, [searchParams]);
 
-  const { data: products = [] } = useQuery({ queryKey: ["products"], queryFn: fetchProducts, retry: false });
-  const { data: categories = [] } = useQuery({ queryKey: ["categories"], queryFn: fetchCategories, retry: false });
+  const { data: products = [], isLoading: productsLoading } = useQuery({ queryKey: ["products"], queryFn: fetchProducts, retry: false });
+  const { data: categories = [], isLoading: catsLoading } = useQuery({ queryKey: ["categories"], queryFn: fetchCategories, retry: false });
 
-  const filtered = activeCategory === "All"
+  const isLoading = productsLoading || catsLoading;
+
+  const productId = searchParams.get("product");
+
+  const filtered = productId
+    ? products.filter((p) => p.id === productId)
+    : activeCategory === "All"
     ? products
     : products.filter((p) => p.category === activeCategory);
 
@@ -54,8 +60,8 @@ const Products = () => {
         </div>
       </section>
 
-      {/* Category Filter */}
-      {categories.length > 0 && (
+      {/* Category Filter — hide when single product selected */}
+      {categories.length > 0 && !productId && (
         <div className="bg-white border-b sticky top-16 z-10">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex gap-2 overflow-x-auto py-3 scrollbar-hide">
@@ -83,7 +89,47 @@ const Products = () => {
 
       <section className="pb-24 bg-white">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-10">
-          {products.length === 0 ? (
+          {isLoading ? (
+            <div className="flex items-center justify-center py-24">
+              <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : productId && filtered.length > 0 ? (
+            // Single product detail view
+            <div className="max-w-5xl mx-auto">
+              <button
+                onClick={() => setSearchParams({})}
+                className="mb-8 text-sm text-primary hover:underline flex items-center gap-1"
+              >
+                ← Back to all products
+              </button>
+              <div className="rounded-3xl overflow-hidden border border-gray-200 shadow-lg bg-white">
+                {/* Full width image */}
+                <div className="relative w-full h-80 sm:h-96" style={{ background: 'linear-gradient(135deg, #e8edf2 0%, #d0d8e4 100%)' }}>
+                  {filtered[0].image ? (
+                    <img
+                      src={filtered[0].image}
+                      alt={filtered[0].name}
+                      className="w-full h-full object-contain p-6"
+                      style={{ filter: 'contrast(1.05) saturate(1.1)' }}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-8xl opacity-20">📦</div>
+                  )}
+                  {filtered[0].category && (
+                    <span className="absolute top-4 left-4 px-3 py-1 rounded-full bg-white/90 text-orange-600 text-xs font-semibold shadow">
+                      {filtered[0].category}
+                    </span>
+                  )}
+                </div>
+                {/* Content below */}
+                <div className="p-8 sm:p-12">
+                  <h2 className="font-display text-4xl font-bold text-gray-900 mb-4">{filtered[0].name}</h2>
+                  <div className="w-16 h-1 bg-primary rounded mb-6" />
+                  <p className="text-gray-600 leading-relaxed text-lg max-w-2xl">{filtered[0].description}</p>
+                </div>
+              </div>
+            </div>
+          ) : products.length === 0 ? (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-24">
               <div className="text-6xl mb-4">📦</div>
               <p className="text-foreground font-semibold text-lg mb-2">Premium Packaging Solutions Coming Your Way</p>
