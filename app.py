@@ -18,6 +18,9 @@ import cloudinary.uploader
 
 load_dotenv()
 
+import resend
+resend.api_key = os.environ.get('RESEND_API_KEY', '')
+
 app = Flask(__name__)
 CORS(app)
 
@@ -525,26 +528,18 @@ def contact():
 
     if not name or not email or not message:
         return jsonify({'error': 'All fields are required'}), 400
-    if not SMTP_PASS:
-        return jsonify({'error': 'Email service not configured'}), 500
 
     try:
-        msg = MIMEMultipart()
-        msg['From'] = SMTP_USER
-        msg['To'] = CONTACT_TO
-        msg['Reply-To'] = email
-        msg['Subject'] = f"New Enquiry from {name} — Knack Solutions"
-        msg.attach(MIMEText(f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}", 'plain'))
-
-        with smtplib.SMTP('smtp.gmail.com', 587) as server:
-            server.ehlo()
-            server.starttls()
-            server.login(SMTP_USER, SMTP_PASS)
-            server.sendmail(SMTP_USER, CONTACT_TO, msg.as_string())
-
+        resend.Emails.send({
+            "from": "Knack Solutions <onboarding@resend.dev>",
+            "to": [CONTACT_TO],
+            "reply_to": email,
+            "subject": f"New Enquiry from {name} — Knack Solutions",
+            "text": f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}"
+        })
         return jsonify({'message': 'Email sent successfully'}), 200
     except Exception as e:
-        print(f"SMTP ERROR: {str(e)}", flush=True)
+        print(f"RESEND ERROR: {str(e)}", flush=True)
         return jsonify({'error': str(e)}), 500
 
 
