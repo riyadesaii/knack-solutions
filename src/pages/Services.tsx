@@ -21,7 +21,7 @@ const Services = () => {
   const singleService = serviceId ? services.find((s) => s.id === serviceId) : null;
 
   return (
-    <div className="min-h-screen pt-16 overflow-hidden">
+    <div className="min-h-screen pt-24 overflow-hidden">
 
       {/* Hero */}
       <section className="relative py-16 overflow-hidden">

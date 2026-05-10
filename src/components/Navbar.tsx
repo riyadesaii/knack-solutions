@@ -83,7 +83,7 @@ const Navbar = () => {
       className="fixed top-0 left-0 right-0 z-50 bg-slate-900 shadow-sm"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-24">
           <Link to="/" className="flex items-center gap-0">
             <img src={logo} alt="Knack Solutions" className="h-28 w-auto transition-all duration-300" />
             <span className="font-display text-4xl font-bold tracking-tight leading-none -ml-3 text-gray-400">

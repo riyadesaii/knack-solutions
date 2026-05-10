@@ -37,7 +37,7 @@ const Products = () => {
   const uncategorized = products.filter((p) => !p.category);
 
   return (
-    <div className="min-h-screen pt-16 overflow-hidden">
+    <div className="min-h-screen pt-24 overflow-hidden">
 
       {/* Hero */}
       <section className="relative py-16 overflow-hidden">
@@ -62,7 +62,7 @@ const Products = () => {
 
       {/* Category Filter — hide when single product selected */}
       {categories.length > 0 && !productId && (
-        <div className="bg-white border-b sticky top-16 z-10">
+        <div className="bg-white border-b sticky top-24 z-10">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex gap-2 overflow-x-auto py-3 scrollbar-hide">
               {["All", ...categories.map((c) => c.name)].map((cat) => (

@@ -46,7 +46,7 @@ const Admin = () => {
 
   if (!authed) {
     return (
-      <div className="min-h-screen pt-16 flex items-center justify-center">
+      <div className="min-h-screen pt-24 flex items-center justify-center">
         <div className="w-full max-w-sm p-8 rounded-xl border bg-card shadow-card space-y-4">
           <h1 className="font-display text-2xl font-bold text-foreground">Admin Access</h1>
           <p className="text-sm text-muted-foreground">Enter the admin key to continue.</p>
@@ -310,7 +310,7 @@ const AdminDashboard = ({ onLogout }: { onLogout: () => void }) => {
   };
 
   return (
-    <div className="min-h-screen pt-16 pb-20">
+    <div className="min-h-screen pt-24 pb-20">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="flex items-center justify-between mb-10">
           <h1 className="font-display text-3xl font-bold text-foreground">Admin Dashboard</h1>

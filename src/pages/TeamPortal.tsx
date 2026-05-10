@@ -100,7 +100,7 @@ const TeamPortal = () => {
 
   if (emails !== null) {
     return (
-      <div className="min-h-screen pt-16 bg-orange-50/30">
+      <div className="min-h-screen pt-24 bg-orange-50/30">
 
         {/* Compose Modal */}
         {composing && (
@@ -218,7 +218,7 @@ const TeamPortal = () => {
   }
 
   return (
-    <div className="min-h-screen pt-16 flex items-center justify-center bg-orange-50/30">
+    <div className="min-h-screen pt-24 flex items-center justify-center bg-orange-50/30">
       <div className="w-full max-w-sm mx-4 bg-white rounded-2xl border border-border/60 shadow-card p-8 space-y-6">
         <div className="text-center">
           <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-orange-100 flex items-center justify-center">

@@ -16,7 +16,7 @@ const stats = [
 ];
 
 const About = () => (
-  <div className="min-h-screen pt-16 overflow-hidden">
+  <div className="min-h-screen pt-24 overflow-hidden">
 
     {/* Hero banner */}
     <section className="relative py-16 overflow-hidden">
