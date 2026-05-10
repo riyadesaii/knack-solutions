@@ -20,6 +20,8 @@ const Navbar = () => {
   const [productsOpen, setProductsOpen] = useState(false);
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
   const [servicesOpen, setServicesOpen] = useState(false);
+  const [mobileProductsOpen, setMobileProductsOpen] = useState(false);
+  const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const servicesDropdownRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
@@ -57,6 +59,8 @@ const Navbar = () => {
     setHoveredCategory(null);
     setServicesOpen(false);
     setIsOpen(false);
+    setMobileProductsOpen(false);
+    setMobileServicesOpen(false);
   }, [location.pathname]);
 
   const handleCategoryClick = (cat: string) => {
@@ -283,52 +287,71 @@ const Navbar = () => {
             <div className="px-4 py-3 space-y-1">
               {navLinks.map((link, i) => (
                 <motion.div key={link.to} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }}>
-                  <Link
-                    to={link.to}
-                    onClick={() => setIsOpen(false)}
-                    className={`block px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                      location.pathname === link.to
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                    }`}
-                  >
-                    {link.label}
-                  </Link>
-                  {link.to === "/products" && categories.length > 0 && (
-                    <div className="ml-4 mt-1 space-y-1">
-                      {categories.map((c) => (
-                        <div key={c.id}>
-                          <button
-                            onClick={() => { setIsOpen(false); handleCategoryClick(c.name); }}
-                            className="block w-full text-left px-4 py-2 rounded-lg text-sm text-muted-foreground hover:text-primary hover:bg-orange-50 transition-colors font-medium"
-                          >
-                            → {c.name}
+                  {link.to === "/products" && categories.length > 0 ? (
+                    <>
+                      <button
+                        onClick={() => setMobileProductsOpen((v) => !v)}
+                        className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                          location.pathname === link.to ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                        }`}
+                      >
+                        {link.label}
+                        <ChevronDown size={14} className={`transition-transform duration-200 ${mobileProductsOpen ? "rotate-180" : ""}`} />
+                      </button>
+                      {mobileProductsOpen && (
+                        <div className="ml-4 mt-1 space-y-1">
+                          <button onClick={() => { setIsOpen(false); navigate("/products"); }} className="block w-full text-left px-4 py-2 rounded-lg text-sm text-muted-foreground hover:text-primary hover:bg-orange-50 transition-colors font-medium">
+                            All Products
                           </button>
-                          {getProductsForCategory(c.name).map((p) => (
-                            <button
-                              key={p.id}
-                              onClick={() => { setIsOpen(false); handleProductClick(p.id); }}
-                              className="block w-full text-left pl-8 pr-4 py-1.5 rounded-lg text-xs text-muted-foreground hover:text-primary hover:bg-orange-50 transition-colors"
-                            >
-                              • {p.name}
+                          {categories.map((c) => (
+                            <div key={c.id}>
+                              <button onClick={() => { setIsOpen(false); handleCategoryClick(c.name); }} className="block w-full text-left px-4 py-2 rounded-lg text-sm text-muted-foreground hover:text-primary hover:bg-orange-50 transition-colors font-medium">
+                                → {c.name}
+                              </button>
+                              {getProductsForCategory(c.name).map((p) => (
+                                <button key={p.id} onClick={() => { setIsOpen(false); handleProductClick(p.id); }} className="block w-full text-left pl-8 pr-4 py-1.5 rounded-lg text-xs text-muted-foreground hover:text-primary hover:bg-orange-50 transition-colors">
+                                  • {p.name}
+                                </button>
+                              ))}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  ) : link.to === "/services" && services.length > 0 ? (
+                    <>
+                      <button
+                        onClick={() => setMobileServicesOpen((v) => !v)}
+                        className={`w-full flex items-center justify-between px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                          location.pathname === link.to ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                        }`}
+                      >
+                        {link.label}
+                        <ChevronDown size={14} className={`transition-transform duration-200 ${mobileServicesOpen ? "rotate-180" : ""}`} />
+                      </button>
+                      {mobileServicesOpen && (
+                        <div className="ml-4 mt-1 space-y-1">
+                          <button onClick={() => { setIsOpen(false); navigate("/services"); }} className="block w-full text-left px-4 py-2 rounded-lg text-sm text-muted-foreground hover:text-primary hover:bg-orange-50 transition-colors font-medium">
+                            All Services
+                          </button>
+                          {services.map((s) => (
+                            <button key={s.id} onClick={() => { setIsOpen(false); navigate(`/services?service=${encodeURIComponent(s.id)}`); }} className="block w-full text-left px-4 py-2 rounded-lg text-sm text-muted-foreground hover:text-primary hover:bg-orange-50 transition-colors">
+                              → {s.name}
                             </button>
                           ))}
                         </div>
-                      ))}
-                    </div>
-                  )}
-                  {link.to === "/services" && services.length > 0 && (
-                    <div className="ml-4 mt-1 space-y-1">
-                      {services.map((s) => (
-                        <button
-                          key={s.id}
-                          onClick={() => { setIsOpen(false); navigate(`/services?service=${encodeURIComponent(s.id)}`); }}
-                          className="block w-full text-left px-4 py-2 rounded-lg text-sm text-muted-foreground hover:text-primary hover:bg-orange-50 transition-colors"
-                        >
-                          → {s.name}
-                        </button>
-                      ))}
-                    </div>
+                      )}
+                    </>
+                  ) : (
+                    <Link
+                      to={link.to}
+                      onClick={() => setIsOpen(false)}
+                      className={`block px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                        location.pathname === link.to ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                      }`}
+                    >
+                      {link.label}
+                    </Link>
                   )}
                 </motion.div>
               ))}

@@ -16,8 +16,8 @@ import Services from "./pages/Services";
 import TeamPortal from "./pages/TeamPortal";
 
 const ScrollToTop = () => {
-  const { pathname } = useLocation();
-  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  const { pathname, search } = useLocation();
+  useEffect(() => { window.scrollTo(0, 0); }, [pathname, search]);
   return null;
 };
 
